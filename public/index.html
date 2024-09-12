@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+</head>
+<body>
+    <h1>Users</h1>
+
+    <!-- Section to display users in a dropdown -->
+    <label for="user-select">Select User:</label>
+    <select id="user-select">
+        <!-- Users will be populated here dynamically -->
+    </select>
+
+    <!-- Job selection dropdown -->
+    <label for="job-select">Select Job:</label>
+    <select id="job-select">
+        <option value="EC">EC</option>
+        <option value="FH">FH</option>
+    </select>
+
+    <!-- Section to select start and end times -->
+    <h2>Calculate Pay</h2>
+    <form id="calculate-pay-form">
+        <label for="start-time">Start Time:</label>
+        <select id="start-time" required></select>
+
+        <label for="end-time">End Time:</label>
+        <select id="end-time" required></select>
+
+        <button type="submit">Calculate Pay</button>
+    </form>
+
+    <!-- Display the calculated pay -->
+    <div id="pay-result"></div>
+
+    <!-- Categorized payouts by Job -->
+    <h2>Payout Totals</h2>
+    <div id="ec-total">EC Total: $0.00</div>
+    <div id="fh-total">FH Total: $0.00</div>
+
+    <h2>Add New User</h2>
+<form id="add-user-form">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+    <label for="rateOfPay">Rate of Pay:</label>
+    <input type="number" id="rateOfPay" name="rateOfPay" required>
+    <button type="submit">Add User</button>
+</form>
+
+<!-- Div to display the fewest bills information -->
+<div id="bills-info"></div>
+
+
+    <script src="app.js"></script> <!-- Link to the JavaScript file -->
+</body>
+</html>
