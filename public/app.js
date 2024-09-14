@@ -1,69 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const userList = document.getElementById('user-select'); // User dropdown
+    const userList = document.getElementById('user-select'); // User dropdown for calculating pay
+    const editUserSelect = document.getElementById('edit-user-select'); // Dropdown for editing users
+    const modifyUserSelect = document.getElementById('modify-user-select'); // Dropdown for modifying users
+    const userListDisplay = document.getElementById('user-list'); // List to display all users
+    const displayUsersBtn = document.getElementById('display-users-btn'); // Button to display users
+
     const jobList = document.getElementById('job-select'); // Job dropdown
     const payResult = document.getElementById('pay-result'); // Div to show pay result
     const addUserForm = document.getElementById('add-user-form'); // Add user form
+    const editUserForm = document.getElementById('edit-user-form'); // Edit user form
+    const modifyUserForm = document.getElementById('modify-user-form'); // Modify user form
     const calculatePayForm = document.getElementById('calculate-pay-form'); // Pay calculation form
     const startTimeDropdown = document.getElementById('start-time'); // Start time dropdown
     const endTimeDropdown = document.getElementById('end-time'); // End time dropdown
     const billsInfo = document.getElementById('bills-info'); // Div to display bills information
 
-    // Running tally for each job and user payout tracking
-    let ecTotal = 0;
-    let fhTotal = 0;
-    let ecUsers = []; // Store objects with user name and their payout for EC
-    let fhUsers = []; // Store objects with user name and their payout for FH
+    // Handle collapsible logic for "Manage Users" section
+    const collapsibleButton = document.querySelector('.collapsible');
+    const collapsibleContent = document.querySelector('.content');
 
-    // Function to calculate the fewest bills for a given amount using 20s, 10s, 5s, and 1s
-    const calculateFewestBills = (amount) => {
-        const denominations = [20, 10, 5, 1];
-        let remaining = Math.floor(amount); // We don't deal with coins
-        const bills = {};
+    collapsibleButton.addEventListener('click', function () {
+        collapsibleContent.style.display = (collapsibleContent.style.display === 'block') ? 'none' : 'block';
+    });
 
-        for (const denom of denominations) {
-            bills[denom] = Math.floor(remaining / denom);
-            remaining %= denom;
-        }
-
-        return bills;
-    };
-
-    // Function to display the fewest bills under the "Add New User" section
-    const displayBillsInfo = (name, amount) => {
-        const bills = calculateFewestBills(amount);
-        billsInfo.textContent = `Pay ${name} with: ${bills[20]} x $20, ${bills[10]} x $10, ${bills[5]} x $5, ${bills[1]} x $1`;
-    };
-
-    // Update displayed totals for jobs
-    const updateJobTotals = () => {
-        // Sort users by pay, highest to lowest
-        ecUsers.sort((a, b) => b.pay - a.pay);
-        fhUsers.sort((a, b) => b.pay - a.pay);
-
-        // Format user list with clickable names and their respective payout
-        const formatUserList = (users) => {
-            return users.map(user => {
-                const span = document.createElement('span');
-                span.textContent = `${user.name} ($${user.pay.toFixed(2)})`;
-                span.className = 'clickable';
-                span.addEventListener('click', () => displayBillsInfo(user.name, user.pay));
-                return span;
-            });
-        };
-
-        // Update EC and FH totals
-        const ecTotalElement = document.getElementById('ec-total');
-        const fhTotalElement = document.getElementById('fh-total');
-        
-        ecTotalElement.textContent = `EC Total: $${ecTotal.toFixed(2)} | `;
-        fhTotalElement.textContent = `FH Total: $${fhTotal.toFixed(2)} | `;
-
-        // Append clickable names
-        formatUserList(ecUsers).forEach(span => ecTotalElement.appendChild(span));
-        formatUserList(fhUsers).forEach(span => fhTotalElement.appendChild(span));
-    };
-
-    // Populate time dropdown with 15-minute intervals in 12-hour format with AM/PM
+    // Function to populate the start and end time dropdowns with 15-minute intervals
     const populateTimeDropdown = (dropdown) => {
         for (let hour = 0; hour < 24; hour++) {
             for (let minute = 0; minute < 60; minute += 15) {
@@ -83,31 +43,47 @@ document.addEventListener('DOMContentLoaded', () => {
     populateTimeDropdown(startTimeDropdown);
     populateTimeDropdown(endTimeDropdown);
 
-    // Fetch and display users in the dropdown
+    // Function to fetch and display users in the dropdowns and list
     const fetchUsers = async () => {
         const response = await fetch('/api/users');
         const users = await response.json();
-        displayUsers(users);
+        displayUsersInDropdowns(users);
+        displayUsersInList(users);
     };
 
-    // Function to populate users in the dropdown
-    const displayUsers = (users) => {
-        userList.innerHTML = ''; // Clear the dropdown
+    // Function to populate the user dropdowns for editing and modifying
+    const displayUsersInDropdowns = (users) => {
+        userList.innerHTML = ''; // Clear user dropdown for calculating pay
+        editUserSelect.innerHTML = ''; // Clear edit user dropdown
+        modifyUserSelect.innerHTML = ''; // Clear modify user dropdown
+
         users.forEach(user => {
             const option = document.createElement('option');
             option.value = user.id;
             option.textContent = `${user.name} (Rate: $${user.rateOfPay}/hr)`;
-            userList.appendChild(option);
+            
+            userList.appendChild(option.cloneNode(true));
+            editUserSelect.appendChild(option.cloneNode(true));
+            modifyUserSelect.appendChild(option.cloneNode(true));
         });
     };
 
-    // Handle form submission to add a new user
+    // Function to display users in a list
+    const displayUsersInList = (users) => {
+        userListDisplay.innerHTML = ''; // Clear user list
+        users.forEach(user => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${user.name} (Rate: $${user.rateOfPay}/hr)`;
+            userListDisplay.appendChild(listItem);
+        });
+    };
+
+    // Handle adding a new user
     addUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('name').value;
         const rateOfPay = document.getElementById('rateOfPay').value;
 
-        // Send POST request to add a new user
         const response = await fetch('/api/users', {
             method: 'POST',
             headers: {
@@ -124,63 +100,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle form submission to calculate pay
-    calculatePayForm.addEventListener('submit', async (e) => {
+    // Handle editing a user
+    editUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const userId = userList.value;
-        const selectedJob = jobList.value;
-        const startTime = startTimeDropdown.value;
-        const endTime = endTimeDropdown.value;
+        const userId = editUserSelect.value;
+        const newName = document.getElementById('edit-name').value;
+        const newRateOfPay = document.getElementById('edit-rateOfPay').value;
 
-        // Convert the selected times to Date objects
-        const startDateTime = new Date(`1970-01-01T${startTime}:00`);
-        let endDateTime = new Date(`1970-01-01T${endTime}:00`);
+        const response = await fetch(`/api/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: newName, rateOfPay: newRateOfPay })
+        });
 
-        // If end time is before start time, assume the end time is on the following day
-        if (endDateTime <= startDateTime) {
-            endDateTime.setDate(endDateTime.getDate() + 1);
-        }
-
-        // Get selected user info
-        const response = await fetch('/api/users');
-        const users = await response.json();
-        const user = users.find(u => u.id == userId);
-
-        if (user) {
-            // Calculate the total time worked in 15-minute intervals
-            const totalMilliseconds = endDateTime - startDateTime;
-            const totalMinutes = totalMilliseconds / (1000 * 60); // Convert milliseconds to minutes
-            const intervals = totalMinutes / 15; // 15-minute intervals
-            const hoursWorked = totalMinutes / 60; // Convert minutes to hours
-            const totalPay = hoursWorked * user.rateOfPay;
-
-            // Categorize payouts by job and keep track of users and their individual payout
-            if (selectedJob === 'EC') {
-                ecTotal += totalPay;
-                const existingUser = ecUsers.find(u => u.name === user.name);
-                if (existingUser) {
-                    existingUser.pay += totalPay; // Add to the existing user's total
-                } else {
-                    ecUsers.push({ name: user.name, pay: totalPay }); // Add new user with their payout
-                }
-            } else if (selectedJob === 'FH') {
-                fhTotal += totalPay;
-                const existingUser = fhUsers.find(u => u.name === user.name);
-                if (existingUser) {
-                    existingUser.pay += totalPay; // Add to the existing user's total
-                } else {
-                    fhUsers.push({ name: user.name, pay: totalPay }); // Add new user with their payout
-                }
-            }
-
-            // Update the job totals display
-            updateJobTotals();
-
-            // Display the calculated pay and intervals
-            payResult.textContent = `${user.name} worked ${hoursWorked.toFixed(2)} hours (${intervals} intervals of 15 minutes) on ${selectedJob}. Total Pay: $${totalPay.toFixed(2)}`;
+        if (response.ok) {
+            fetchUsers(); // Refresh the user list
+            editUserForm.reset(); // Reset the form
         } else {
-            payResult.textContent = "User not found.";
+            console.error('Error editing user');
         }
+    });
+
+    // Handle modifying a user's rate of pay
+    modifyUserForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userId = modifyUserSelect.value;
+        const modifyAction = document.getElementById('modify-action').value;
+        const modifyRate = parseFloat(document.getElementById('modify-rate').value);
+
+        const response = await fetch(`/api/users/${userId}`);
+        const user = await response.json();
+
+        let updatedRate = user.rateOfPay;
+        if (modifyAction === 'Increase Rate') {
+            updatedRate += modifyRate;
+        } else if (modifyAction === 'Decrease Rate') {
+            updatedRate -= modifyRate;
+        }
+
+        const updateResponse = await fetch(`/api/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rateOfPay: updatedRate })
+        });
+
+        if (updateResponse.ok) {
+            fetchUsers(); // Refresh the user list
+            modifyUserForm.reset(); // Reset the form
+        } else {
+            console.error('Error modifying user');
+        }
+    });
+
+    // Handle displaying the user list
+    displayUsersBtn.addEventListener('click', () => {
+        fetchUsers();
     });
 
     // Initial fetch of users when the page loads

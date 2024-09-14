@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users</title>
+    <style>
+        .clickable {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+        }
+        .collapsible {
+            background-color: #777;
+            color: white;
+            cursor: pointer;
+            padding: 10px;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 16px;
+        }
+        .content {
+            padding: 0 15px;
+            display: none;
+            overflow: hidden;
+            background-color: #f1f1f1;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>Users</h1>
@@ -41,18 +65,51 @@
     <div id="ec-total">EC Total: $0.00</div>
     <div id="fh-total">FH Total: $0.00</div>
 
-    <h2>Add New User</h2>
-<form id="add-user-form">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required>
-    <label for="rateOfPay">Rate of Pay:</label>
-    <input type="number" id="rateOfPay" name="rateOfPay" required>
-    <button type="submit">Add User</button>
-</form>
+    <!-- Collapsible Section for Manage Users -->
+    <button class="collapsible">Manage Users</button>
+    <div class="content">
+        <h3>Add User</h3>
+        <form id="add-user-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="rateOfPay">Rate of Pay:</label>
+            <input type="number" id="rateOfPay" name="rateOfPay" required>
+            <button type="submit">Add User</button>
+        </form>
 
-<!-- Div to display the fewest bills information -->
-<div id="bills-info"></div>
+        <h3>Edit User</h3>
+        <form id="edit-user-form">
+            <label for="edit-user-select">Select User to Edit:</label>
+            <select id="edit-user-select"></select> <!-- Populated dynamically -->
+            <label for="edit-name">New Name:</label>
+            <input type="text" id="edit-name" name="edit-name">
+            <label for="edit-rateOfPay">New Rate of Pay:</label>
+            <input type="number" id="edit-rateOfPay" name="edit-rateOfPay">
+            <button type="submit">Edit User</button>
+        </form>
 
+        <h3>Modify User</h3>
+        <form id="modify-user-form">
+            <label for="modify-user-select">Select User to Modify:</label>
+            <select id="modify-user-select"></select> <!-- Populated dynamically -->
+            <label for="modify-action">Action:</label>
+            <select id="modify-action">
+                <option value="Increase Rate">Increase Rate</option>
+                <option value="Decrease Rate">Decrease Rate</option>
+            </select>
+            <label for="modify-rate">Amount:</label>
+            <input type="number" id="modify-rate" name="modify-rate" required>
+            <button type="submit">Modify User</button>
+        </form>
+
+        <h3>Display List of Users</h3>
+        <button id="display-users-btn">Show Users</button>
+        <ul id="user-list"></ul> <!-- User list will be populated here -->
+    </div>
+
+    <!-- Div to display the fewest bills information -->
+    <h2>Bill Breakdown</h2>
+    <div id="bills-info"></div>
 
     <script src="app.js"></script> <!-- Link to the JavaScript file -->
 </body>
