@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const editUserSelect = document.getElementById('edit-user-select'); // Dropdown for editing users
     const modifyUserSelect = document.getElementById('modify-user-select'); // Dropdown for modifying users
     const userListDisplay = document.getElementById('user-list'); // List to display all users
-    const displayUsersBtn = document.getElementById('display-users-btn'); // Button to display users
 
     const jobList = document.getElementById('job-select'); // Job dropdown
     const payResult = document.getElementById('pay-result'); // Div to show pay result
@@ -34,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to populate the start and end time dropdowns with 15-minute intervals
     const populateTimeDropdown = (dropdown) => {
         for (let hour = 0; hour < 24; hour++) {
-            for (let minute = 0; minute < 60; minute += 15) { // Fixed loop condition
+            for (let minute = 0; minute < 60; minute += 15) {
                 let hour12 = hour % 12 || 12; // Convert 24-hour to 12-hour format
                 let period = hour < 12 ? 'AM' : 'PM';
                 let timeString = `${String(hour12).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${period}`;
@@ -98,11 +97,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Fetch users and populate dropdowns
+    // Function to display the users in a persistent list
+    const displayUsers = (users) => {
+        userListDisplay.innerHTML = ''; // Clear the existing user list
+        users.forEach(user => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${user.name} (Rate: $${user.rateOfPay}/hr)`;
+            userListDisplay.appendChild(listItem);
+        });
+    };
+
+    // Fetch users and populate dropdowns and display list
     const fetchUsers = async () => {
         const response = await fetch('/api/users');
         const users = await response.json();
-        populateUserDropdowns(users);
+        populateUserDropdowns(users); // Update dropdowns
+        displayUsers(users); // Persistently display user list
     };
 
     // Handle form submission to add a new user
