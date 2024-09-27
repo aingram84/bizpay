@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!isNaN(moneyReceived) && !isNaN(rate) && rate !== 0) {
             const result = (moneyReceived / rate).toFixed(2);
-            moneyCalculationResult.textContent = `Paid for ${result} hours`;
+            moneyCalculationResult.textContent = `Result: ${result}`;
         } else {
             moneyCalculationResult.textContent = "Please enter valid numbers and ensure rate is not 0.";
         }
@@ -98,11 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to update the displayed totals for EC and FH
     const updateJobTotals = () => {
         const formatUserList = (users) => {
-            return users.map(user => `${user.name} ($${user.pay.toFixed(2)})`).join(', ');
+            return users.map(user => `<span class="clickable" data-user="${user.name}" data-pay="${user.pay}">${user.name} ($${user.pay.toFixed(2)})</span>`).join(', ');
         };
 
-        ecTotalElement.textContent = `EC Total: $${ecTotal.toFixed(2)} (Users: ${formatUserList(ecUsers)})`;
-        fhTotalElement.textContent = `FH Total: $${fhTotal.toFixed(2)} (Users: ${formatUserList(fhUsers)})`;
+        ecTotalElement.innerHTML = `EC Total: $${ecTotal.toFixed(2)} (Users: ${formatUserList(ecUsers)})`;
+        fhTotalElement.innerHTML = `FH Total: $${fhTotal.toFixed(2)} (Users: ${formatUserList(fhUsers)})`;
+
+        // Add event listeners to the clickable user names for bill breakdown
+        document.querySelectorAll('.clickable').forEach(item => {
+            item.addEventListener('click', function () {
+                const userName = this.getAttribute('data-user');
+                const userPay = parseFloat(this.getAttribute('data-pay'));
+                displayBillsInfo(userName, userPay);
+            });
+        });
     };
 
     // Function to populate the user dropdowns
