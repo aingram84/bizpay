@@ -2,14 +2,14 @@
 body {
     background-color: #000000; /* Black background */
     color: #B4975A; /* Gold text */
-    font-family: 'Metal Mania', sans-serif; /* Metal-inspired font (Google Fonts or similar) */
+    font-family: 'Metal Mania', sans-serif; /* Metal-inspired font */
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
+    min-height: 100vh; /* Set min-height instead of height */
+    overflow-y: auto; /* Enable vertical scrolling */
 }
 
 /* Headings */
@@ -151,4 +151,15 @@ li {
     background-color: #B4975A;
     padding: 2px 5px;
     border-left: 2px solid #c8102E;
+}
+
+/* Ensure content section is scrollable */
+.content {
+    padding: 15px;
+    background-color: #000000;
+    display: none;
+    border-left: 2px solid #B4975A;
+    border-right: 2px solid #B4975A;
+    max-height: 70vh; /* Ensure it doesn't take too much space */
+    overflow-y: auto; /* Enable scrolling inside the content area if it overflows */
 }
