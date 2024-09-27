@@ -20,34 +20,49 @@ document.addEventListener('DOMContentLoaded', () => {
     let ecUsers = [];
     let fhUsers = [];
 
-    // Handle collapsible logic for "Manage Users" section
-    const collapsibleButton = document.querySelector('.collapsible');
-    const collapsibleContent = document.querySelector('.content');
+    // Handle collapsible logic for both "Manage Users" and "Money Calculator" sections
+    const collapsibleButtons = document.querySelectorAll('.collapsible');
+    collapsibleButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const content = this.nextElementSibling;
+            content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+        });
+    });
 
-    collapsibleButton.addEventListener('click', function () {
-        collapsibleContent.style.display = (collapsibleContent.style.display === 'block') ? 'none' : 'block';
+    // Money Calculator Section
+    const moneyCalculatorForm = document.getElementById('money-calculator-form');
+    const moneyReceivedInput = document.getElementById('money-received');
+    const rateInput = document.getElementById('rate');
+    const moneyCalculationResult = document.getElementById('money-calculation-result');
+
+    moneyCalculatorForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const moneyReceived = parseFloat(moneyReceivedInput.value);
+        const rate = parseFloat(rateInput.value);
+        
+        if (!isNaN(moneyReceived) && !isNaN(rate) && rate !== 0) {
+            const result = (moneyReceived / rate).toFixed(2);
+            moneyCalculationResult.textContent = `Paid for ${result} hours`;
+        } else {
+            moneyCalculationResult.textContent = "Please enter valid numbers and ensure rate is not 0.";
+        }
     });
 
     // Function to populate the start and end time dropdowns with 15-minute intervals
     const populateTimeDropdown = (dropdown) => {
-        const times = [];
         for (let hour = 0; hour < 24; hour++) {
             for (let minute = 0; minute < 60; minute += 15) {
                 let hour12 = hour % 12 || 12; // Convert 24-hour to 12-hour format
                 let period = hour < 12 ? 'AM' : 'PM';
                 let timeString = `${String(hour12).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${period}`;
-                let timeValue = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`; // Value in 24-hour format
                 
-                times.push({ timeString, timeValue });
+                const option = document.createElement('option');
+                option.value = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`; // Keep the value in 24-hour format
+                option.textContent = timeString; // Display in 12-hour format
+                dropdown.appendChild(option);
             }
         }
-
-        times.forEach(({ timeString, timeValue }) => {
-            const option = document.createElement('option');
-            option.value = timeValue;
-            option.textContent = timeString;
-            dropdown.appendChild(option);
-        });
     };
 
     // Populate the start and end time dropdowns

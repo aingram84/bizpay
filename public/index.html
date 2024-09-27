@@ -9,6 +9,24 @@
 <body>
     <h1>Users</h1>
 
+    <!-- Expandable section for Money Received and Rate -->
+    <button class="collapsible">Money Calculator</button>
+<div class="content">
+    <h3>Money Calculator</h3>
+    <form id="money-calculator-form">
+        <label for="money-received">Money Received:</label>
+        <input type="number" id="money-received" name="money-received" required>
+        
+        <label for="rate">Rate:</label>
+        <input type="number" id="rate" name="rate" value="17" required> <!-- Default rate set to 17 -->
+
+        <button type="submit">Calculate</button>
+    </form>
+
+    <!-- Display the result of Money Received divided by Rate -->
+    <div id="money-calculation-result"></div>
+</div>
+
     <!-- Section to display users in a dropdown -->
     <label for="user-select">Select User:</label>
     <select id="user-select">

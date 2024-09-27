@@ -88,12 +88,13 @@ select {
     border: none;
     cursor: pointer;
     text-transform: uppercase;
-    font-size: 16px;
-    padding: 10px;
-    width: 100%;
+    font-size: 14px; /* Smaller font size */
+    padding: 8px 12px; /* Smaller padding */
+    width: auto; /* Adjust width to fit the text */
     text-align: left;
     outline: none;
     transition: background-color 0.3s ease;
+    border-radius: 5px; /* Add a slight border-radius for styling */
 }
 
 /* Add a red border on hover */
