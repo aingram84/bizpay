@@ -1,14 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     const userList = document.getElementById('user-select'); // User dropdown for calculating pay
     const editUserSelect = document.getElementById('edit-user-select'); // Dropdown for editing users
-    const modifyUserSelect = document.getElementById('modify-user-select'); // Dropdown for modifying users
     const userListDisplay = document.getElementById('user-list'); // List to display all users
 
     const jobList = document.getElementById('job-select'); // Job dropdown
     const payResult = document.getElementById('pay-result'); // Div to show pay result
     const addUserForm = document.getElementById('add-user-form'); // Add user form
     const editUserForm = document.getElementById('edit-user-form'); // Edit user form
-    const modifyUserForm = document.getElementById('modify-user-form'); // Modify user form
     const calculatePayForm = document.getElementById('calculate-pay-form'); // Pay calculation form
     const startTimeDropdown = document.getElementById('start-time'); // Start time dropdown
     const endTimeDropdown = document.getElementById('end-time'); // End time dropdown
@@ -32,23 +30,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to populate the start and end time dropdowns with 15-minute intervals
     const populateTimeDropdown = (dropdown) => {
+        const times = [];
         for (let hour = 0; hour < 24; hour++) {
             for (let minute = 0; minute < 60; minute += 15) {
                 let hour12 = hour % 12 || 12; // Convert 24-hour to 12-hour format
                 let period = hour < 12 ? 'AM' : 'PM';
                 let timeString = `${String(hour12).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${period}`;
+                let timeValue = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`; // Value in 24-hour format
                 
-                const option = document.createElement('option');
-                option.value = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`; // Keep the value in 24-hour format
-                option.textContent = timeString; // Display in 12-hour format
-                dropdown.appendChild(option);
+                times.push({ timeString, timeValue });
             }
         }
+
+        times.forEach(({ timeString, timeValue }) => {
+            const option = document.createElement('option');
+            option.value = timeValue;
+            option.textContent = timeString;
+            dropdown.appendChild(option);
+        });
     };
 
     // Populate the start and end time dropdowns
     populateTimeDropdown(startTimeDropdown);
     populateTimeDropdown(endTimeDropdown);
+
+    // Set default Start Time to 5:45 PM
+    startTimeDropdown.value = '17:45';
+
+    // Set default End Time to 1:00 AM
+    endTimeDropdown.value = '01:00';
 
     // Function to calculate the fewest bills for a given amount using 20s, 10s, 5s, and 1s
     const calculateFewestBills = (amount) => {
@@ -84,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const populateUserDropdowns = (users) => {
         userList.innerHTML = ''; // Clear existing dropdown options
         editUserSelect.innerHTML = '';
-        modifyUserSelect.innerHTML = '';
 
         users.forEach(user => {
             const option = document.createElement('option');
@@ -93,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             userList.appendChild(option.cloneNode(true));
             editUserSelect.appendChild(option.cloneNode(true));
-            modifyUserSelect.appendChild(option.cloneNode(true));
         });
     };
 
@@ -121,6 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('name').value;
         const rateOfPay = document.getElementById('rateOfPay').value;
 
+        if (!name || !rateOfPay) {
+            console.error('Name and Rate of Pay must not be empty.');
+            return;
+        }
+
         const response = await fetch('/api/users', {
             method: 'POST',
             headers: {
@@ -135,6 +148,45 @@ document.addEventListener('DOMContentLoaded', () => {
             collapsibleContent.style.display = 'block'; // Ensure the section remains open after adding a user
         } else {
             console.error('Error adding user');
+        }
+    });
+
+    // Handle form submission to edit a user (either New Name or New Rate of Pay can be provided)
+    editUserForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userId = editUserSelect.value;
+        const newName = document.getElementById('edit-name').value;
+        const newRateOfPay = document.getElementById('edit-rateOfPay').value;
+
+        if (!userId) {
+            console.error('User must be selected.');
+            return;
+        }
+
+        // Prepare the updated user data, ensuring that only provided fields are included
+        const updatedUser = {};
+        if (newName) updatedUser.name = newName;
+        if (newRateOfPay) updatedUser.rateOfPay = newRateOfPay;
+
+        if (Object.keys(updatedUser).length === 0) {
+            console.error('Either New Name or New Rate of Pay must be provided.');
+            return;
+        }
+
+        const response = await fetch(`/api/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedUser)
+        });
+
+        if (response.ok) {
+            fetchUsers(); // Refresh the user list
+            editUserForm.reset(); // Reset the form
+        } else {
+            const errorDetails = await response.json();
+            console.error('Error editing user:', errorDetails);
         }
     });
 
